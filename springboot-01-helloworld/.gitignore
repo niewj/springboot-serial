@@ -5,7 +5,7 @@
 
 # IntelliJ project files
 .idea
-.mvn
+/*.mvn/
 /.idea/
 /target/
 *.iml

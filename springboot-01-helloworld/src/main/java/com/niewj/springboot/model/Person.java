@@ -19,7 +19,7 @@ import java.util.Map;
 @Data
 @Component
 //@PropertySource("classpath:/person.yml") // 3 yml文件是不支持的!!
-@PropertySource(value = {"classpath:/person.properties"}) // 1 指定自定义的 properties 配置文件
+//@PropertySource(value = {"classpath:/person.properties"}) // 1 指定自定义的 properties 配置文件
 @ConfigurationProperties(prefix = "person") // 2
 public class Person {
     private String lastName;
