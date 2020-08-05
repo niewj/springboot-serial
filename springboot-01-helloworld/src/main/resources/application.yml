@@ -1,15 +1,15 @@
 server:
   port: 8888
 
-#person:
-#  lastName: 李四
-#  age: 33
-#  male: true
-#  birth: 1985/03/03
-#  maps: {k1: v1, k2: 20, k3: true}
-#  lists:
-#    - lisi
-#    - wangwu
-#  dog:
-#    name: 小黄
-#    age: 3
+person:
+  lastName: ${random.uuid} # uuid
+  age: ${random.int(100)} # 0-100的随机值
+  male: true
+  birth: 1985/03/03
+  maps: {k1: v1, k2: 20, k3: true}
+  lists:
+    - lisi
+    - wangwu
+  dog:
+    name: ${person.firstName:无名}_小黄 #如果为空, 取默认值
+    age: ${random.int[10,20]} #10-20之间的随机值: 中间还不能有空格, 实测!

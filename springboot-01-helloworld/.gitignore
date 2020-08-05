@@ -5,6 +5,9 @@
 
 # IntelliJ project files
 .idea
+/*.mvn/
+/.idea/
+/target/
 *.iml
 out
 gen

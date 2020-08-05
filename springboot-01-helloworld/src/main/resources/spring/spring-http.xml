@@ -4,7 +4,6 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
        http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-
     <!-- -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= -->
     <!-- RestTemplate -->
     <bean id="httpClient" class="com.niewj.springboot.utils.MyHttpClientUtils" factory-method="buildHttpClient"/>
