@@ -1,2 +1,4 @@
 # Project exclude paths
 /springboot-01-helloworld/target/
+src/main/resources/static/
+src/main/resources/templates/
