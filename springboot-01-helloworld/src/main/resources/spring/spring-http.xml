@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+    <!-- -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= -->
+    <!-- RestTemplate -->
+    <bean id="httpClient" class="com.niewj.springboot.utils.MyHttpClientUtils" factory-method="buildHttpClient"/>
+
+    <bean id="clientHttpRequestFactory" class="org.springframework.http.client.HttpComponentsClientHttpRequestFactory">
+        <property name="connectTimeout" value="20000"/><!-- 连接超时 -->
+        <property name="readTimeout" value="30000"/><!-- 数据读取超时时间 -->
+        <property name="connectionRequestTimeout" value="20000"/> <!-- 连接不够用的等待时间 -->
+        <constructor-arg ref="httpClient"/>
+    </bean>
+
+    <bean id="restTemplate" class=" org.springframework.web.client.RestTemplate">
+        <constructor-arg ref="clientHttpRequestFactory"/>
+    </bean>
+</beans>
