@@ -1,0 +1,12 @@
+person:
+  lastName: 李2四
+  age: 33
+  male: true
+  birth: 1985/03/03
+  maps: {k1: v1, k2: 20, k3: true}
+  lists:
+    - lisi
+    - wangwu
+  dog:
+    name: 小黄
+    age: 3
