@@ -810,9 +810,327 @@ server.port=8081
 </beans>
 ```
 
+## 6. springboot整合Dubbo-(3)-API注解
+
+这种方式实际上就是: 把xml里的配置都写到一个Configuration里, 通过@Bean方式暴露, 具体如下:
+
+### 6.1 项目模块同上
+
+### 6.2 接口模块(springboot-dubbo-interface)同上
+
+### 6.3 订单模块(springboot-dubbo-order-consumer)
+
+1. maven依赖 同4.3
+2. Controller 同4.3
+3. 订单实现接口OrderServiceImpl 
+
+```java
+package com.niewj.springboot.service.impl;
+
+import com.niewj.springboot.mall.model.UserAddress;
+import com.niewj.springboot.mall.service.OrderService;
+import com.niewj.springboot.mall.service.UserService;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.dubbo.config.annotation.Reference;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * Created by niewj on 2020/8/14 10:04
+ */
+@Slf4j
+@org.springframework.stereotype.Service
+public class OrderServiceImpl implements OrderService {
+
+    /**
+     * dubbo Reference, 指向服务提供方
+     * 3. 为远程服务生成代理, 然后就可以像使用本地接口一样使用了
+     */
+    @Reference(check = false)
+    private UserService userService;
+
+    @Override
+    public List<UserAddress> prepareOrder(String userId) {
+        System.out.println("用户id：" + userId);
+        //1、查询用户的收货地址
+        List<UserAddress> addressList = userService.getAddresses(userId);
+
+        if (CollectionUtils.isEmpty(addressList)) {
+            log.error("addressList is empty");
+        }
+        List<UserAddress> userAddresses = addressList.stream().filter(addr -> addr.getUserId().equals(userId)).collect(Collectors.toList());
+        System.out.println("过滤地址后返回");
+        return userAddresses;
+    }
+}
+```
+
+用回@Reference(check = false)
+
+> 这里的 check=false 好像没起作用, 因为先启动consumer时报错了, 后来在application.properties里加了配置所有consumer check=false才OK的, 后面研究下!
+
+4. 启动类main方法类:
+
+```java
+package com.niewj.springboot;
+
+import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ImportResource;
+
+@EnableDubbo(scanBasePackages = "com.niewj.springboot") // 开启dubbo, 扫描API注解
+@SpringBootApplication
+//@ImportResource(locations = "classpath:consumer.xml")
+public class OrderConsumerApp {
+
+    public static void main(String[] args) {
+        SpringApplication.run(OrderConsumerApp.class, args);
+    }
+
+}
+```
+
+这里用回 @EnableDubbo, 实际上是要用其继承的注解:@DubboComponentScan , 一样的! 指定扫描包路径:
+
+> @EnableDubbo(scanBasePackages = "com.niewj.springboot")
 
 
-## 6. dubbo知识点
+5. application.properties:
+
+```properties
+server.port=8082
+dubbo.consumer.check=false
+
+```
+
+dubbo.consumer.check=false 是因为上面 @Reference(check=false)没起作用; 后续研究!!!
+
+6. consumer.xml: 当然废弃!
+7. 配置类: DubboConsumerConfig
+
+```java
+package com.niewj.springboot.config;
+
+import com.niewj.springboot.mall.service.UserService;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.MethodConfig;
+import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.RegistryConfig;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import java.util.Arrays;
+
+/**
+ * Created by niewj on 2020/8/14 14:33
+ */
+@Configuration
+public class DubboConsumerConfig {
+
+    /**
+     *     <!-- 1. 消费端应用名, 用于追踪依赖关系(非标准), 不要将他设置为何provider相同的   -->
+     *     <dubbo:application name="mall-order-consumer"/>
+     * @return
+     */
+    @Bean
+    public ApplicationConfig applicationConfig(){
+        ApplicationConfig application = new ApplicationConfig();
+        application.setName("mall-order-consumer");
+        return application;
+    }
+
+    /**
+     *     <!-- 2. 使用 zookeeper 注册中心发现服务  -->
+     *     <dubbo:registry address="zookeeper://127.0.0.1:2181" />
+     */
+    @Bean
+    public RegistryConfig registryConfig(){
+        RegistryConfig registry = new RegistryConfig();
+        registry.setAddress("zookeeper://127.0.0.1:2181");
+        return registry;
+    }
+
+    /**
+     * <!-- 3. 为远程服务生成代理, 然后就可以像使用本地接口一样使用了 -->
+     *     <dubbo:reference id="userService" check="false" interface="com.niewj.springboot.mall.service.UserService" >
+     *         <dubbo:method name="getAddresses" timeout="5000"/>
+     *     </dubbo:reference>
+     */
+    @Bean
+    public ReferenceConfig<UserService> referenceConfig(){
+        MethodConfig method = new MethodConfig();
+        method.setName("getAddresses");
+        method.setTimeout(1000);
+
+        ReferenceConfig<UserService> reference = new ReferenceConfig();
+        reference.setInterface(UserService.class);
+        reference.setId("userService");
+        reference.setMethods(Arrays.asList(method));
+
+        return reference;
+    }
+
+}
+```
+
+
+
+### 6.4 用户服务(springboot-dubbo-user-provider)
+
+1. maven 同上 4.4
+2. provider方: UserServiceImpl实现方法:
+
+```java
+package com.niewj.springboot.service.impl;
+
+import com.niewj.springboot.mall.model.UserAddress;
+import com.niewj.springboot.mall.service.UserService;
+
+import java.util.Arrays;
+import java.util.List;
+
+/**
+ * Created by niewj on 2020/8/14 9:57
+ */
+
+/**
+ * 4. 暴露的服务, interface供他人调用, 全路径接口名; ref引用实现类的bean id
+ */
+@org.apache.dubbo.config.annotation.Service // dubbo Service 声明
+@org.springframework.stereotype.Service // spring Service
+public class UserServiceImpl implements UserService {
+    @Override
+    public List<UserAddress> getAddresses(String userId) {
+
+        System.out.println("@@--UserServiceImpl........");
+        UserAddress addr1 = new UserAddress("1", "北京亦庄开发区1号", "小王", "010-10102010");
+        UserAddress addr2 = new UserAddress("2", "北京亦庄开发区2号", "老王", "010-20102010");
+        UserAddress addr3 = new UserAddress("3", "西安曲江创意谷1期", "小张", "029-29296259");
+        UserAddress addr4 = new UserAddress("4", "西安曲江创意谷2期", "老张", "029-39296259");
+        System.out.println("@@--getAddresses-version-调用");
+        return Arrays.asList(addr1, addr2, addr3, addr4);
+    }
+}
+```
+
+@org.apache.dubbo.config.annotation.Service // dubbo Service 声明
+@org.springframework.stereotype.Service // spring Service
+
+两个@Service注解都启用!
+
+3. main方法入口:
+
+```java
+package com.niewj.springboot;
+
+import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ImportResource;
+
+@EnableDubbo(scanBasePackages = "com.niewj.springboot") // 开启dubbo
+@SpringBootApplication
+//@ImportResource(locations = "classpath:provider.xml")
+public class UserProviderApp {
+
+    public static void main(String[] args) {
+        SpringApplication.run(UserProviderApp.class, args);
+    }
+
+}
+
+```
+
+@EnableDubbo(scanBasePackages = "com.niewj.springboot") // 开启dubbo
+
+加上扫描包路径!
+
+4. application.properties 只留端口配置
+
+```properties
+server.port=8081
+
+```
+
+5. resources/provider.xml 弃用
+6. 配置类: DubboProviderConfig
+
+```java
+package com.niewj.springboot.config;
+
+import com.niewj.springboot.mall.service.UserService;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ProtocolConfig;
+import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.ServiceConfig;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * Created by niewj on 2020/8/14 14:33
+ */
+@Configuration
+public class DubboProviderConfig {
+
+    /**
+     * <!-- 1. 指定服务名 -->
+     * <dubbo:application name="mall-user-provider"  />
+     *
+     * @return
+     */
+    @Bean
+    public ApplicationConfig applicationConfig() {
+        ApplicationConfig application = new ApplicationConfig();
+        application.setName("mall-user-provider");
+        return application;
+    }
+
+    /**
+     * <!-- 2. 指定注册中心位置 -->
+     * <dubbo:registry protocol="zookeeper" address="127.0.0.1:2181" />
+     */
+    @Bean
+    public RegistryConfig registryConfig() {
+        RegistryConfig registry = new RegistryConfig();
+        registry.setProtocol("zookeeper");
+        registry.setAddress("127.0.0.1:2181");
+        return registry;
+    }
+
+    /**
+     * <!-- 3. 指定通信规则(包括协议/端口) 端口随便写, 比如20880 -->
+     * <dubbo:protocol name="dubbo" port="20880" />
+     */
+    @Bean
+    public ProtocolConfig protocolConfig() {
+        ProtocolConfig protocol = new ProtocolConfig();
+        protocol.setName("dubbo");
+        protocol.setPort(20880);
+
+        return protocol;
+    }
+
+    /**
+     * <!-- 4. 暴露的服务, interface供他人调用, 全路径接口名; ref引用实现类的bean id -->
+     * <dubbo:service interface="com.niewj.springboot.mall.service.UserService" ref="userServiceImpl" />
+     */
+    @Bean
+    public ServiceConfig<UserService> userServiceConfig(UserService userService) {
+        ServiceConfig<UserService> serviceConfig = new ServiceConfig<>();
+        serviceConfig.setRef(userService);
+        serviceConfig.setInterface(UserService.class);
+        return serviceConfig;
+    }
+
+}
+```
+
+
+## 7. dubbo知识点
 
 1. 优先级顺序:
 

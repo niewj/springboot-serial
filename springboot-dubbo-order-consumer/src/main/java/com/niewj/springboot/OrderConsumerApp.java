@@ -5,9 +5,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ImportResource;
 
-//@EnableDubbo // 开启dubbo
+@EnableDubbo(scanBasePackages = "com.niewj.springboot") // 开启dubbo, 扫描API注解
 @SpringBootApplication
-@ImportResource(locations = "classpath:consumer.xml")
+//@ImportResource(locations = "classpath:consumer.xml")
 public class OrderConsumerApp {
 
     public static void main(String[] args) {

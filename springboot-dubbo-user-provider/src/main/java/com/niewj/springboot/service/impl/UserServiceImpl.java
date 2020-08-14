@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * 4. 暴露的服务, interface供他人调用, 全路径接口名; ref引用实现类的bean id
  */
-//@org.apache.dubbo.config.annotation.Service // dubbo Service 声明
+@org.apache.dubbo.config.annotation.Service // dubbo Service 声明
 @org.springframework.stereotype.Service // spring Service
 public class UserServiceImpl implements UserService {
     @Override

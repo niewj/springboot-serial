@@ -4,6 +4,7 @@ import com.niewj.springboot.mall.model.UserAddress;
 import com.niewj.springboot.mall.service.OrderService;
 import com.niewj.springboot.mall.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.dubbo.config.annotation.Reference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 
@@ -21,8 +22,7 @@ public class OrderServiceImpl implements OrderService {
      * dubbo Reference, 指向服务提供方
      * 3. 为远程服务生成代理, 然后就可以像使用本地接口一样使用了
      */
-//    @Reference
-    @Autowired
+    @Reference(check = false)
     private UserService userService;
 
     @Override
