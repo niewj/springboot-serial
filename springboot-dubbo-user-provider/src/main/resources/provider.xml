@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--suppress SpringFacetInspection -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://dubbo.apache.org/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
+
+
+    <!-- 1. 指定服务名 -->
+    <dubbo:application name="mall-user-provider"  />
+
+    <!-- 2. 指定注册中心位置 -->
+    <dubbo:registry protocol="zookeeper" address="127.0.0.1:2181" />
+
+    <!-- 3. 指定通信规则(包括协议/端口) 端口随便写, 比如20880 -->
+    <dubbo:protocol name="dubbo" port="20880" />
+
+    <!-- 4. 暴露的服务, interface供他人调用, 全路径接口名; ref引用实现类的bean id -->
+    <dubbo:service interface="com.niewj.springboot.mall.service.UserService" ref="userServiceImpl" />
+
+    <!-- 5.   服务的实现-->
+<!--    <bean id="userServiceImpl" class="com.niewj.springboot.service.impl.UserServiceImpl" />-->
+
+    <!--    连接监控中心:通过注册中心去发现, 非直连-->
+<!--    <dubbo:monitor protocol="registry" />-->
+
+</beans>

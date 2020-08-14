@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--suppress ALL -->
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://dubbo.apache.org/schema/dubbo"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+       http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
+
+    <!-- 1. 消费端应用名, 用于追踪依赖关系(非标准), 不要将他设置为何provider相同的   -->
+    <dubbo:application name="mall-order-consumer"/>
+
+    <!-- 2. 使用 zookeeper 注册中心发现服务  -->
+    <dubbo:registry address="zookeeper://127.0.0.1:2181" />
+
+    <!-- 3. 为远程服务生成代理, 然后就可以像使用本地接口一样使用了 -->
+    <dubbo:reference id="userService" check="false" interface="com.niewj.springboot.mall.service.UserService" >
+        <dubbo:method name="getAddresses" timeout="5000"/>
+    </dubbo:reference>
+
+    <!--    连接监控中心:通过注册中心去发现, 非直连-->
+<!--    <dubbo:monitor protocol="registry" />-->
+</beans>
