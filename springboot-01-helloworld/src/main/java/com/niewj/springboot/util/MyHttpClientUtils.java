@@ -1,4 +1,4 @@
-package com.niewj.springboot.utils;
+package com.niewj.springboot.util;
 
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;

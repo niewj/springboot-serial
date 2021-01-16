@@ -6,7 +6,7 @@
 
     <!-- -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= -->
     <!-- RestTemplate -->
-    <bean id="httpClient" class="com.niewj.springboot.utils.MyHttpClientUtils" factory-method="buildHttpClient"/>
+    <bean id="httpClient" class="com.niewj.springboot.util.MyHttpClientUtils" factory-method="buildHttpClient"/>
 
     <bean id="clientHttpRequestFactory" class="org.springframework.http.client.HttpComponentsClientHttpRequestFactory">
         <property name="connectTimeout" value="20000"/><!-- 连接超时 -->
