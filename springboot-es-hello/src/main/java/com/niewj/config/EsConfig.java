@@ -26,7 +26,7 @@ public class EsConfig {
     }
     @Bean
     public RestHighLevelClient restHighLevelClient(){
-        RestClientBuilder restClientBuilder = RestClient.builder(new HttpHost("niewj.com", 9200, "http"));
+        RestClientBuilder restClientBuilder = RestClient.builder(new HttpHost("localhost", 9200, "http"));
         RestHighLevelClient client = new RestHighLevelClient(restClientBuilder);
         return client;
     }
