@@ -1,4 +1,11 @@
 # Project exclude paths
 /springboot-01-helloworld/target/
-src/main/resources/static/
-src/main/resources/templates/
+.idea/
+springboot-01-helloworld/.mvn/
+springboot-02-config/.mvn/
+springboot-03-logging/.mvn/
+springboot-04-web-curd/.mvn/
+springboot-dubbo-interface/.mvn/
+springboot-dubbo-order-consumer/.mvn/
+springboot-dubbo-user-provider/.mvn/
+springboot-es-hello/target/
